@@ -2,7 +2,9 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -17,27 +19,38 @@ public class FacultyController {
     }
 
     @PostMapping
-    public Faculty add(@RequestBody Faculty faculty) {
+    public Faculty addFaculty(@RequestBody Faculty faculty) {
         return service.add(faculty);
     }
 
     @GetMapping("/{id}")
-    public Faculty get(@PathVariable Long id) {
+    public Faculty getFaculty(@PathVariable Long id) {
         return service.get(id);
     }
 
     @GetMapping
-    public List<Faculty> getAll() {
+    public List<Faculty> getAllFaculties() {
         return service.getAll();
     }
 
     @PutMapping
-    public Faculty update(@RequestBody Faculty faculty) {
+    public Faculty updateFaculty(@RequestBody Faculty faculty) {
         return service.update(faculty);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void deleteFaculty(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @GetMapping("/{id}/students")
+    public List<Student> getFacultyStudents(@PathVariable Long id) {
+        return service.getStudents(id);
+    }
+
+    @GetMapping("/search")
+    public List<Faculty> findFaculties(
+            @RequestParam String value) {
+        return service.findByNameOrColor(value);
     }
 }

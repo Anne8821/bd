@@ -12,6 +12,10 @@ public class Student {
     private String name;
     private int age;
 
+    @ManyToOne
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
+
     public Student() {
     }
 
@@ -32,6 +36,10 @@ public class Student {
         return age;
     }
 
+    public Faculty getFaculty() {
+        return faculty;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -42,5 +50,9 @@ public class Student {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 }
