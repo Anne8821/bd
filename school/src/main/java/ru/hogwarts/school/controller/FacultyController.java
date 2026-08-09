@@ -5,6 +5,8 @@ import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,7 +27,16 @@ public class FacultyController {
 
     @GetMapping("/{id}")
     public Faculty getFaculty(@PathVariable Long id) {
-        return service.get(id);
+        Faculty faculty = service.get(id);
+
+        if (faculty == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Faculty not found"
+            );
+        }
+
+        return faculty;
     }
 
     @GetMapping
