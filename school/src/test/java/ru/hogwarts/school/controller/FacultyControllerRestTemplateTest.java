@@ -8,6 +8,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,6 +71,17 @@ public class FacultyControllerRestTemplateTest {
 
     @Test
     void getAllFacultiesTest() {
+        Faculty faculty = new Faculty("Faculty For Get All", "Orange");
+
+        ResponseEntity<Faculty> created = restTemplate.postForEntity(
+                url("/faculty"),
+                faculty,
+                Faculty.class
+        );
+
+        assertEquals(HttpStatus.OK, created.getStatusCode());
+        assertNotNull(created.getBody());
+
         ResponseEntity<Faculty[]> response = restTemplate.getForEntity(
                 url("/faculty"),
                 Faculty[].class
@@ -77,6 +89,15 @@ public class FacultyControllerRestTemplateTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        assertTrue(response.getBody().length > 0);
+
+        assertTrue(
+                java.util.Arrays.stream(response.getBody())
+                        .anyMatch(f ->
+                                "Faculty For Get All".equals(f.getName())
+                                        && "Orange".equals(f.getColor())
+                        )
+        );
     }
 
     @Test
@@ -146,6 +167,50 @@ public class FacultyControllerRestTemplateTest {
     }
 
     @Test
+    void getFacultyStudentsTest() {
+        Faculty faculty = new Faculty("Faculty With Students", "Blue");
+
+        ResponseEntity<Faculty> createdFaculty = restTemplate.postForEntity(
+                url("/faculty"),
+                faculty,
+                Faculty.class
+        );
+
+        assertEquals(HttpStatus.OK, createdFaculty.getStatusCode());
+        assertNotNull(createdFaculty.getBody());
+
+        Long facultyId = createdFaculty.getBody().getId();
+
+        Student student = new Student("Student Of Faculty", 20);
+        student.setFaculty(createdFaculty.getBody());
+
+        ResponseEntity<Student> createdStudent = restTemplate.postForEntity(
+                url("/student"),
+                student,
+                Student.class
+        );
+
+        assertEquals(HttpStatus.OK, createdStudent.getStatusCode());
+        assertNotNull(createdStudent.getBody());
+
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
+                url("/faculty/" + facultyId + "/students"),
+                Student[].class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+
+        assertTrue(
+                java.util.Arrays.stream(response.getBody())
+                        .anyMatch(s ->
+                                "Student Of Faculty".equals(s.getName())
+                                        && s.getAge() == 20
+                        )
+        );
+    }
+
+    @Test
     void findFacultiesTest() {
         Faculty faculty = new Faculty("Faculty For Search", "Purple");
 
@@ -168,7 +233,10 @@ public class FacultyControllerRestTemplateTest {
 
         assertTrue(
                 java.util.Arrays.stream(response.getBody())
-                        .anyMatch(f -> "Faculty For Search".equals(f.getName()))
+                        .anyMatch(f ->
+                                "Faculty For Search".equals(f.getName())
+                                        && "Purple".equals(f.getColor())
+                        )
         );
     }
 

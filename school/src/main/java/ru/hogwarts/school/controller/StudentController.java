@@ -67,4 +67,19 @@ public class StudentController {
 
         return service.findByAgeBetween(min, max);
     }
+
+    @GetMapping("/count")
+    public long getStudentsCount() {
+        return service.getStudentsCount();
+    }
+
+    @GetMapping("/average-age")
+    public Double getAverageAge() {
+        return service.getAverageAge();
+    }
+
+    @GetMapping("/last-five")
+    public List<Student> getLastFiveStudents() {
+        return service.getLastFiveStudents();
+    }
 }

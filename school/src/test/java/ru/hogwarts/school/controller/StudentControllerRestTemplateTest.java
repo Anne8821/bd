@@ -7,6 +7,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +36,7 @@ public class StudentControllerRestTemplateTest {
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertNotNull(response.getBody().getId());
         assertEquals("Test Student", response.getBody().getName());
         assertEquals(20, response.getBody().getAge());
@@ -69,6 +71,18 @@ public class StudentControllerRestTemplateTest {
 
     @Test
     void getAllStudentsTest() {
+        Student student = new Student("Student For Get All", 21);
+
+        ResponseEntity<Student> created = restTemplate.postForEntity(
+                url("/student"),
+                student,
+                Student.class
+        );
+
+        assertEquals(HttpStatus.OK, created.getStatusCode());
+        assertNotNull(created.getBody());
+        assertNotNull(created.getBody().getId());
+
         ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 url("/student"),
                 Student[].class
@@ -76,6 +90,15 @@ public class StudentControllerRestTemplateTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        assertTrue(response.getBody().length > 0);
+
+        assertTrue(
+                java.util.Arrays.stream(response.getBody())
+                        .anyMatch(s ->
+                                "Student For Get All".equals(s.getName())
+                                        && s.getAge() == 21
+                        )
+        );
     }
 
     @Test
@@ -155,6 +178,7 @@ public class StudentControllerRestTemplateTest {
         );
 
         assertEquals(HttpStatus.OK, created.getStatusCode());
+        assertNotNull(created.getBody());
 
         ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 url("/student/age?min=10&max=20"),
@@ -166,8 +190,53 @@ public class StudentControllerRestTemplateTest {
 
         assertTrue(
                 java.util.Arrays.stream(response.getBody())
-                        .anyMatch(s -> "Student For Age".equals(s.getName()))
+                        .anyMatch(s ->
+                                "Student For Age".equals(s.getName())
+                                        && s.getAge() == 15
+                        )
         );
+    }
+
+    @Test
+    void getStudentFacultyTest() {
+        Faculty faculty = new Faculty("Student Test Faculty", "Red");
+
+        ResponseEntity<Faculty> createdFaculty = restTemplate.postForEntity(
+                url("/faculty"),
+                faculty,
+                Faculty.class
+        );
+
+        assertEquals(HttpStatus.OK, createdFaculty.getStatusCode());
+        assertNotNull(createdFaculty.getBody());
+        assertNotNull(createdFaculty.getBody().getId());
+
+        Student student = new Student("Student With Faculty", 19);
+
+        student.setFaculty(createdFaculty.getBody());
+
+        ResponseEntity<Student> createdStudent = restTemplate.postForEntity(
+                url("/student"),
+                student,
+                Student.class
+        );
+
+        assertEquals(HttpStatus.OK, createdStudent.getStatusCode());
+        assertNotNull(createdStudent.getBody());
+        assertNotNull(createdStudent.getBody().getId());
+
+        Long studentId = createdStudent.getBody().getId();
+
+        ResponseEntity<Faculty> response = restTemplate.getForEntity(
+                url("/student/" + studentId + "/faculty"),
+                Faculty.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(createdFaculty.getBody().getId(), response.getBody().getId());
+        assertEquals("Student Test Faculty", response.getBody().getName());
+        assertEquals("Red", response.getBody().getColor());
     }
 
     @Test
